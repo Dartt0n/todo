@@ -1,20 +1,34 @@
 use colored::*;
-use std::fs::OpenOptions;
+use directories::ProjectDirs;
+use std::fs::{create_dir_all, OpenOptions};
 use std::io::prelude::Read;
 use std::io::{BufReader, BufWriter, Write};
+use std::path::PathBuf;
 use std::process;
 
 pub struct Todo {
+    pub file: PathBuf,
     pub todo: Vec<String>,
 }
 
 impl Todo {
     pub fn new() -> Result<Self, String> {
+        // Create new project.
+        let todo_project = ProjectDirs::from("", "Dartt0n", "td");
+        let todo_project = todo_project.expect("Couldn't initialize project");
+        // Get config directory. For Example, $HOME/.config/td on Linux
+        let todo_config_dir = todo_project.config_dir();
+        let todo_path = todo_config_dir.join("global.todo");
+        if !todo_path.exists() {
+            // Create directory and file if not exits
+            create_dir_all(&todo_path).expect("Couldn't create config directory");
+        }
+
         let todofile = OpenOptions::new()
             .write(true)
             .read(true)
             .create(true)
-            .open("TODO")
+            .open(&todo_path)
             .expect("Couldn't open the todofile");
 
         // Creates a new buf reader
@@ -30,42 +44,37 @@ impl Todo {
         let todo = contents.to_string().lines().map(str::to_string).collect();
 
         // Returns todo
-        Ok(Self { todo })
+        Ok(Self { file: todo_path, todo })
     }
 
     // Prints every todo saved
     pub fn list(&self) {
         // This loop will repeat itself for each taks in TODO file
         for (number, task) in self.todo.iter().enumerate() {
-            if task.len() > 5 {
-                // Converts virgin default number into a chad BOLD string
-                let number = (number + 1).to_string().bold();
-
-                // Saves the symbol of current task
-                let symbol = &task[..4];
-                // Saves a task without a symbol
-                let task = &task[4..];
-
-                // Checks if the current task is completed or not...
-                if symbol == "[*] " {
-                    // DONE
-                    // If the task is completed, then it prints it with a strikethrough
-                    println!("{} {}", number, task.strikethrough());
-                } else if symbol == "[ ] " {
-                    // NOT DONE
-                    // If the task is not completed yet, then it will print it as it is
-                    println!("{} {}", number, task);
-                }
+            // Converts number into a bold string
+            let number = (number + 1).to_string().bold();
+            // Saves the symbol of current task
+            let symbol = &task[..4];
+            // Saves a task without a symbol
+            let task = &task[4..];
+            // Checks if the current task is completed or not...
+            if symbol == "[*] " {
+                // DONE
+                // If the task is completed, then it prints it with a strikethrough
+                println!("<{}> {}", number, task.strikethrough());
+            } else if symbol == "[ ] " {
+                // NOT DONE
+                // If the task is not completed yet, then it will print it as it is
+                println!("<{}> {}", number, task);
             }
         }
     }
 
-    // This one is for yall, dmenu chads <3
     pub fn raw(&self, arg: &[String]) {
         if arg.len() > 1 {
             eprintln!("todo raw takes only 1 argument, not {}", arg.len())
         } else if arg.is_empty() {
-            eprintln!("todo raw takes 1 argument (done/todo)");
+            eprintln!("todo raw takes 1 argument. Choose `done` or `todo`)");
         } else {
             // This loop will repeat itself for each taks in TODO file
             for task in self.todo.iter() {
@@ -100,7 +109,7 @@ impl Todo {
         let todofile = OpenOptions::new()
             .create(true) // a) create the file if it does not exist
             .append(true) // b) append a line to it
-            .open("TODO")
+            .open(&self.file)
             .expect("Couldn't open the todofile");
 
         let mut buffer = BufWriter::new(todofile);
@@ -127,7 +136,7 @@ impl Todo {
         let todofile = OpenOptions::new()
             .write(true) // a) write
             .truncate(true) // b) truncrate
-            .open("TODO")
+            .open(&self.file)
             .expect("Couldn't open the todo file");
 
         let mut buffer = BufWriter::new(todofile);
@@ -173,7 +182,7 @@ impl Todo {
         let mut todofile = OpenOptions::new()
             .write(true) // a) write
             .truncate(true) // b) truncrate
-            .open("TODO")
+            .open(&self.file)
             .expect("Couldn't open the todo file");
 
         // Writes contents of a newtodo variable into the TODO file
@@ -191,7 +200,7 @@ impl Todo {
         // Opens the TODO file with a permission to overwrite it
         let todofile = OpenOptions::new()
             .write(true)
-            .open("TODO")
+            .open(&self.file)
             .expect("Couldn't open the todofile");
         let mut buffer = BufWriter::new(todofile);
 
@@ -224,7 +233,7 @@ const TODO_HELP: &str = "Usage: todo [COMMAND] [ARGUMENTS]
 Todo is a super fast and simple tasks organizer written in rust
 Example: todo list
 Available commands:
-    - add [TASK/s] 
+    - add [TASK/s]
         adds new task/s
         Example: todo add \"buy carrots\"
     - list
@@ -233,12 +242,12 @@ Available commands:
     - done [INDEX]
         marks task as done
         Example: todo done 2 3 (marks second and third tasks as completed)
-    - rm [INDEX] 
+    - rm [INDEX]
         removes a task
-        Example: todo rm 4 
+        Example: todo rm 4
     - sort
         sorts completed and uncompleted tasks
-        Example: todo sort 
+        Example: todo sort
     - raw [todo/done]
         prints nothing but done/incompleted tasks in plain text, useful for scripting
         Example: todo raw done
