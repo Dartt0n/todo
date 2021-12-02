@@ -44,7 +44,10 @@ impl Todo {
         let todo = contents.to_string().lines().map(str::to_string).collect();
 
         // Returns todo
-        Ok(Self { file: todo_path, todo })
+        Ok(Self {
+            file: todo_path,
+            todo,
+        })
     }
 
     // Prints every todo saved
