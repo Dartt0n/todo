@@ -67,11 +67,11 @@ impl Todo {
             if symbol == "[*] " {
                 // DONE
                 // If the task is completed, then it prints it with a strikethrough
-                println!("   <{}> {}", number, task.strikethrough());
+                println!("   {} {}", format!("<{}>", number).bold(), task.strikethrough());
             } else if symbol == "[ ] " {
                 // NOT DONE
                 // If the task is not completed yet, then it will print it as it is
-                println!("   <{}> {}", number, task);
+                println!("   {} {}", format!("<{}>", number).bold(), task);
             }
         }
     }
