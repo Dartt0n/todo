@@ -1,6 +1,6 @@
 # Maintainer: Dartt0n <antonkudryavtsevdoem@gmail.com>
 pkgname=dartt0n-td
-pkgver=2.3.1
+pkgver=2.3.2
 pkgrel=1
 pkgdesc="Super fast and simple tasks organizer written in rust"
 url="https://github.com/Dartt0n/todo"
