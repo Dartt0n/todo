@@ -3,13 +3,20 @@ A lightweight and super fast cli todo program written in rust under 200 sloc
 
 ![gif](todo.gif)
 ## installation
-[AUR package](https://aur.archlinux.org/packages/todo-bin/): `todo-bin`
+Release Binary:
+```sh
+git clone https://github.com/Dartt0n/todo
+cd todo
+makepkg -si
+```
+Source:
+```sh
+git clone https://github.com/Dartt0n/todo
+cd todo
+cargo build --release
+sudo cp ./target/release/td /usr/bin/td
+```
 
-use `cargo build --release` to compile todo and copy `target/release/todo` to `/usr/bin`
-## note
-todo is still really early in development so be careful or sth
-
-btw i know that my code is not the best but im still learing 
 ## usage
 ```Usage: todo [COMMAND] [ARGUMENTS]
 Todo is a super fast and simple tasks organizer written in rust
